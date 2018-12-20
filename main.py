@@ -5,9 +5,25 @@
 import RPi.GPIO as GPIO
 import Adafruit_DHT
 import time
+import datetime
+import csv
  
+def Write2CSV(file_name,temp,hum,date):
+    row = [date,temp,hum]
+
+    with open(file_name, 'a') as csvFile:
+        writer = csv.writer(csvFile)
+        writer.writerow(row)
+    csvFile.close()
+
+
+
+
+
+file_name = 'data/1.csv'
+
 # The break of 2 seconds will be configured here
-sleeptime = 2
+sleeptime = 30
  
 # Sensor should be set to Adafruit_DHT.DHT11,
 # Adafruit_DHT.DHT22, or Adafruit_DHT.AM2302.
@@ -28,6 +44,7 @@ try:
  
             # The result will be shown at the console
             print('temperature = {0:0.1f}°C  | rel. humidity = {1:0.1f}%'.format(temper, humid))
+            Write2CSV(file_name,temper,humid,datetime.datetime.now())
          
         # Because of the linux OS, the Raspberry Pi has problems with realtime measurements.
         # It is possible that, because of timing problems, the communication fails.
@@ -40,4 +57,4 @@ try:
  
 # Scavenging work after the end of the program
 except KeyboardInterrupt:
-    GPIO.cleanup()
+    GPIO.cleanup() 
