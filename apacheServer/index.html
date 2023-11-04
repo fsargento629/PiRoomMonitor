@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Wagner-Sargento weather station</title>
+</head>
+<script>
+    function getSensorValues() {
+        fetch('1.csv')
+        .then(response => response.text())
+        .then(text => {
+            var data = text.trim().split("\n"); // Trim to remove any leading/trailing whitespace
+            var lastLine = data[data.length - 1]; // Get the last line
+
+            if (lastLine) {
+                var values = lastLine.split(",");
+                console.log("Split values:", values);
+                var timestamp = values[0];
+                var temperature = values[1] + "°C";
+                var humidity = values[2] + "%";
+
+                document.getElementById("dataLabel").innerHTML = "Date: " + timestamp + "<br>Temperature: " + temperature + "<br>Humidity: " + humidity;
+            } else {
+                document.getElementById("dataLabel").innerHTML = "No data available.";
+            }
+        })
+        .catch(error => {
+            document.getElementById("dataLabel").innerHTML = "Error fetching data: " + error;
+        });
+    }
+</script>
+<body onload="getSensorValues()">
+    <div>
+        <h1>Wagner-Sargento weather station</h1>
+        <h2>Current status</h2>
+        <divs id="dataLabel"></div>
+    </div>
+</body>
+</html>
