@@ -18,8 +18,9 @@ def parseByTimeRange(df,timeRange_days,timeRange_hours,decimationFactor=0):
     start_date = end_date - pd.DateOffset(days=timeRange_days, hours=timeRange_hours)
 
     # Filter the DataFrame to include data within the specified time range
-    cropped_df = df[(df['date'] >= start_date) & (df['date'] <= end_date)]
+    cropped_df = df[(df['date'] >= start_date) & (df['date'] <= end_date)].copy()
 
+     
     return cropped_df
 
 
@@ -31,6 +32,7 @@ def csv2pandas(csv):
     """
     df = pd.read_csv(csv)
     # Define column names
+    
     column_names = ["date", "temperature", "humidity"]
 
     # Assign the column names to the DataFrame
@@ -90,6 +92,7 @@ if __name__ == "__main__":
     ]
     
     
+    
     try:
         while(1):
             # get csv
@@ -110,6 +113,17 @@ if __name__ == "__main__":
                     print(croppedFileName +" has been deleted.")
                 else:
                     print(croppedFileName + " does not exist or could not be found.")
+                    
+            
+                 # add column with time elapsed since start of datafrane
+                # Calculate the time difference (in seconds) between consecutive rows
+                # BUG: This is not working here. debug this in windows !!
+                croppedDf['time_diff'] = (croppedDf['date'] - croppedDf['date'].shift()).dt.total_seconds()
+
+                # Set the first line of 'time_diff' to zero
+                croppedDf.loc[0, 'time_diff'] = 0
+
+                    
                 # save new csv
                 croppedDf.to_csv(croppedFileName, index=False)
                 print("New " + croppedFileName +" has been created.")

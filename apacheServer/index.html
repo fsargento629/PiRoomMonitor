@@ -6,58 +6,87 @@
         <title>Wagner-Sargento weather station</title>
     </head>
     <script>
-        var temperature_trace = {
-            x: [],
-            y: [],
-            mode: 'lines+markers',
-            name: 'Temperature' // Add a name for the temperature trace
-        };
+        function createGraph(trace, title, yaxisTitle, divId,yaxisLimits) {
+            var data = [trace];
+            var layout = {
+                title: title,
+                xaxis: {
+                    title: 'Num Points'
+                },
+                yaxis: {
+                    title: yaxisTitle,
+                    range: yaxisLimits
+                }
+            };
+            Plotly.newPlot(divId, data, layout);
+        }
 
-        var humidity_trace = {
-            x: [],
-            y: [],
-            mode: 'lines+markers',
-            name: 'Humidity' // Add a name for the humidity trace
-        };
+        function formatDateTime(dateTimeString) {
+            // Parse the date and time string and format it as desired
+            const date = new Date(dateTimeString);
+            return date.toLocaleString(); // Customize the format as needed
+        }
 
-        function getTemps() {
-            temperature_trace.x = [];
-            temperature_trace.y = [];
-            humidity_trace.x = []; // Reset humidity x data
-            humidity_trace.y = []; // Reset humidity y data
-            fetch('sensor_data.csv')
+        function getTemps(selectedCSV) {
+            fetch('lastDay.csv')
                 .then(response => response.text())
                 .then(text => {
                     let data = text.split("\n");
+                    var temperature_trace = {
+                        x: [],
+                        y: [],
+                        mode: 'lines+markers',
+                        name: 'Temperature'
+                    };
+
+                    var humidity_trace = {
+                        x: [],
+                        y: [],
+                        mode: 'lines+markers',
+                        name: 'Humidity'
+                    };
+
                     for (let i = 1; i < data.length - 1; i += 1) {
                         csvData = data[i].split(",");
-                        temperature_trace.y.push(csvData[2]);
+                        temperature_trace.y.push(csvData[1]);
                         temperature_trace.x.push(i);
-                        humidity_trace.y.push(csvData[1]);
+                        humidity_trace.y.push(csvData[2]);
                         humidity_trace.x.push(i);
                     }
-                    document.getElementById("dataLabel").innerHTML = csvData[0] + "°C"; // Display last temperature data point
 
-                    // Create separate traces for temperature and humidity
-                    var plotData = [temperature_trace, humidity_trace];
-                    var layout = {
-                        title: 'Temperature and Humidity Data', // Update the title
-                        xaxis: {
-                            title: 'Num Points'
-                        },
-                        yaxis: {
-                            title: 'Degrees Celsius and % Humidity' // Update the y-axis title
-                        }
-                    };
-                    Plotly.newPlot('dataGraph', plotData, layout); // Plot both temperature and humidity data
+                    // Define y-axis limits for temperature and humidity
+                    var temperatureYAxisLimits = [0, 40]; // Example limits for temperature (adjust as needed)
+                    var humidityYAxisLimits = [0, 100];   // Example limits for humidity (adjust as needed)
+
+                    // Create separate graphs for temperature and humidity with y-axis limits
+                    createGraph(temperature_trace, 'Temperature Data', 'Degrees Celsius', 'temperatureGraph', temperatureYAxisLimits);
+                    createGraph(humidity_trace, 'Humidity Data', '% Humidity', 'humidityGraph', humidityYAxisLimits);
+                    document.getElementById("dataLabel").innerHTML = formatDateTime(csvData[0]) + " " + csvData[1] +  "°C  " + csvData[2] + "% humidity"; // Display last temperature data point
                 });
         }
     </script>
-    <body onload="getTemps()">
+    <body>
         <div>
             <h1>Wagner-Sargento weather station</h1>
             <h2 id="dataLabel">?</h2>
-            <div id="dataGraph"></div>
+            <select id="csvSelect">
+                <option value="lastHour.csv">Last hour</option>
+                <option value="lastDay.csv">Last 24 hours</option>
+                <option value="lastWeek.csv">Last 7 days</option>
+                <option value="lastYear.csv">Last 365 days</option>
+                <!-- Add more options for additional CSV files -->
+            </select>
+            <button onclick="loadSelectedCSV()">Load CSV</button>
+            <div id="temperatureGraph"></div>
+            <div id="humidityGraph"></div>
         </div>
     </body>
-</html>
+    <script>
+        function loadSelectedCSV() {
+            const selectElement = document.getElementById("csvSelect");
+            const selectedCSV = selectElement.value;
+            console.log(selectedCSV)
+            getTemps(selectedCSV);
+        }
+    </script>
+    </html>

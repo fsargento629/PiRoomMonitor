@@ -7,23 +7,34 @@ import Adafruit_DHT
 import time
 import datetime
 import csv
- 
+import os
+
+
 def Write2CSV(file_name,temp,hum,date):
     row = [date,temp,hum]
-
+    # append data to main csv
     with open(file_name, 'a') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerow(row)
     csvFile.close()
 
+    # edit lastValues file
+    current_status_filename = '/var/www/html/current_sensor_data.csv'
+    if os.path.exists(current_status_filename):
+        os.remove(current_status_filename)
+        print(current_status_filename +" has been deleted.")
+    else:
+        print(current_status_filename + " does not exist or could not be found.")
+    #write to it now after deleting
+    with open(current_status_filename, 'a') as csvFile:
+        writer = csv.writer(csvFile)
+        writer.writerow(row)
+    csvFile.close()
 
 
-
-
-# csv_name = '/home/pi/PiRoomMonitor/data/1.csv'
 csv_name = '/var/www/html/sensor_data.csv'
-# Log data every 10 seconds
-sleeptime = 10
+# Log data every 30 seconds
+sleeptime = 30
  
 # Sensor should be set to Adafruit_DHT.DHT11,
 # Adafruit_DHT.DHT22, or Adafruit_DHT.AM2302.
