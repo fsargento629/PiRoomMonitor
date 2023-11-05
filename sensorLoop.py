@@ -20,17 +20,17 @@ def Write2CSV(file_name,temp,hum,date):
 
 
 
-file_name = 'data/1.csv'
-
-# The break of 2 seconds will be configured here
-sleeptime = 30
+# csv_name = '/home/pi/PiRoomMonitor/data/1.csv'
+csv_name = '/var/www/html/1.csv'
+# Log data every 10 seconds
+sleeptime = 10
  
 # Sensor should be set to Adafruit_DHT.DHT11,
 # Adafruit_DHT.DHT22, or Adafruit_DHT.AM2302.
 DHTSensor = Adafruit_DHT.DHT11
  
 # The pin which is connected with the sensor will be declared here
-GPIO_Pin = 23
+GPIO_Pin = 14
  
 print('KY-015 sensortest - temperature and humidity')
  
@@ -43,8 +43,8 @@ try:
         if humid is not None and temper is not None:
  
             # The result will be shown at the console
-            print('temperature = {0:0.1f}°C  | rel. humidity = {1:0.1f}%'.format(temper, humid))
-            Write2CSV(file_name,temper,humid,datetime.datetime.now())
+            print('temperature = {0:0.1f}C  | rel. humidity = {1:0.1f}%'.format(temper, humid))
+            Write2CSV(csv_name,temper,humid,datetime.datetime.now())
          
         # Because of the linux OS, the Raspberry Pi has problems with realtime measurements.
         # It is possible that, because of timing problems, the communication fails.
