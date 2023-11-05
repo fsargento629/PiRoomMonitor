@@ -6,7 +6,7 @@
 </head>
 <script>
     function getSensorValues() {
-        fetch('1.csv')
+        fetch('sensor_data.csv')
         .then(response => response.text())
         .then(text => {
             var data = text.trim().split("\n"); // Trim to remove any leading/trailing whitespace

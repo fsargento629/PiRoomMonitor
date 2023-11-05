@@ -21,7 +21,7 @@ def Write2CSV(file_name,temp,hum,date):
 
 
 # csv_name = '/home/pi/PiRoomMonitor/data/1.csv'
-csv_name = '/var/www/html/1.csv'
+csv_name = '/var/www/html/sensor_data.csv'
 # Log data every 10 seconds
 sleeptime = 10
  
