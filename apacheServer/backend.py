@@ -1,7 +1,9 @@
 # The backend is responsible for taking the .csv data from the sensors and preparing them to be shwon in the website
 import pandas as pd
+import time # to be able to sleep
+import os # to remove files
 
-def parseByTimeRange(df,timeRange_days,decimationFactor=0):
+def parseByTimeRange(df,timeRange_days,timeRange_hours,decimationFactor=0):
     """ Returns a smaller dataframe within the given time range
 
     Args:
@@ -13,7 +15,7 @@ def parseByTimeRange(df,timeRange_days,decimationFactor=0):
     end_date = df['date'].max()
 
     # Calculate the start date by subtracting the time range in days from the end date
-    start_date = end_date - pd.DateOffset(days=timeRange_days)
+    start_date = end_date - pd.DateOffset(days=timeRange_days, hours=timeRange_hours)
 
     # Filter the DataFrame to include data within the specified time range
     cropped_df = df[(df['date'] >= start_date) & (df['date'] <= end_date)]
@@ -78,25 +80,43 @@ if __name__ == "__main__":
     
     # Constant variables
     csv_file_name = 'sensor_data.csv'
-    
-    
-    # get csv
-    df = csv2pandas(csv_file_name)
-    
-    # Create csvs for day, week, month, year analysis
     list_of_csvs = [
-    {"name": "lastDay", "timeRange_days": 30},
-    {"name": "lastWeek", "timeRange_days": 25},
-    {"name": "lastMonth", "timeRange_days": 35},
-    {"name": "lastYear", "timeRange_days": 35},
+    {"name": "lastHour", "timeRange_days":0, "timeRange_hours":1},
+    {"name": "lastSixHours", "timeRange_days":0, "timeRange_hours":6},
+    {"name": "lastDay", "timeRange_days": 1, "timeRange_hours":0},
+    {"name": "lastWeek", "timeRange_days": 7, "timeRange_hours":0},
+    {"name": "lastMonth", "timeRange_days": 30, "timeRange_hours":0},
+    {"name": "lastYear", "timeRange_days": 365, "timeRange_hours":0},
     ]
     
-    for croppedCSVs in list_of_csvs:
-        # get new Dataframe for given time range
-        croppedDf =  parseByTimeRange(df,croppedCSVs["timeRange_days"])
-        
-        # save it as a csv 
-        #TODO: check if this creates a conflict with java script (since jscript wants to read it)
-        croppedDf.to_csv(croppedCSVs["name"] +'.csv', index=False)
-
+    
+    try:
+        while(1):
+            # get csv
+            df = csv2pandas(csv_file_name)
+            
+            # Create csvs for day, week, month, year analysis
+            for croppedCSVs in list_of_csvs:
+                # get new Dataframe for given time range
+                croppedDf =  parseByTimeRange(df,croppedCSVs["timeRange_days"],croppedCSVs["timeRange_hours"])
+                
+                # save it as a csv 
+                #TODO: check if this creates a conflict with java script (since jscript wants to read it)
+                
+                # delete old one
+                croppedFileName = croppedCSVs["name"] +'.csv'
+                if os.path.exists(croppedFileName):
+                    os.remove(croppedFileName)
+                    print(croppedFileName +" has been deleted.")
+                else:
+                    print(croppedFileName + " does not exist or could not be found.")
+                # save new csv
+                croppedDf.to_csv(croppedFileName, index=False)
+                print("New " + croppedFileName +" has been created.")
+                
+            # take a break from editing files    
+            print("Csvs created. taking a short break!")
+            time.sleep(600)# every 10minutes
+    except:
+        print("Error in backend.py loop!!")
         
